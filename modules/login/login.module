@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * @file
+ * Contains login.module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function login_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the login module.
+    case 'help.page.login':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Custom login') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+
+function _login_form_register_mail_validate(array $element, FormStateInterface $form_state) {
+  $values = $form_state->getValues();
+  $mail = $values['mail'];
+  $confirm_mail =  $values['confirm_mail'];
+  if ($mail != $confirm_mail) {
+    $form_state->setError($element, t("Emails don't match"));
+  }
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function login_element_info_alter(array &$types)
+{
+  if (isset($types['password_confirm'])) {
+    $types['password_confirm']['#process'][] = 'login_process_password_confirm';
+  }
+}
+
+function login_process_password_confirm($element)
+{
+  $element['pass1']['#title_display'] = 'invisible';
+  $element['pass1']['#attributes']['placeholder'] = t('Password');
+  $element['pass2']['#title_display'] = 'invisible';
+  $element['pass2']['#attributes']['placeholder'] = t('Confirm password');
+
+  return $element;
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function login_preprocess_html(&$variables) {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  if ($route_name == 'user.login') {
+    $variables['attributes']['class'][] = 'path-user';
+  }
+
+
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function login_preprocess_page(&$variables) {
+  $registro = \Drupal::config('user.settings')->get('register');
+  $variables['create_accounts'] = $registro != 'admin_only';
+
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function login_page_attachments(array &$attachments) {
+  $route = Drupal::routeMatch();
+  if ($route) {
+    if ($route->getRouteName() == 'user.login' || $route->getRouteName() == 'user.register' || $route->getRouteName() == 'user.pass' || $route->getRouteName() == 'user.reset') {
+      $attachments['#attached']['library'][] = 'login/gin';
+    }
+  }
+}

@@ -1,0 +1,5 @@
+name: 'Logos'
+type: module
+description: 'Administración de los logos'
+package: 'Corporativa'
+core_version_requirement: ^9

@@ -1,0 +1,5 @@
+email.mail.structure.settings:
+  title: 'Correos'
+  description: 'Configurar correos'
+  route_name: mail.settings
+  parent: corporate.entidades

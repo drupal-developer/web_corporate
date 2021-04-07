@@ -1,0 +1,6 @@
+type: module
+name: Mensajes
+description: 'Mensajes de estado a través de la librería Noty'
+configure: mensajes.settings_form
+package: 'Corporativa'
+core_version_requirement: ^9

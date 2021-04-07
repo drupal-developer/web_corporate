@@ -1,0 +1,36 @@
+services:
+  corporate.route_subscriber:
+    class: Drupal\corporate\Routing\RouteSubscriber
+    tags:
+      - { name: event_subscriber }
+  corporate.theme.negotiator:
+    class: Drupal\corporate\Theme\PageThemeNegotiator
+    arguments: [ '@current_user' ]
+    tags:
+      - { name: theme_negotiator, priority: 1 }
+  corporate.node_form:
+    class: Drupal\corporate\Form\NodeFormAlter
+    arguments:
+      - 'node_form'
+    tags:
+      - name: form_alter
+        priority: 1
+  corporate.block_content_form:
+    class: Drupal\corporate\Form\BlockContentFormAlter
+    arguments:
+      - 'block_content_form'
+    tags:
+      - name: form_alter
+        priority: 1
+  corporate.taxonomy_term_tree:
+    class: Drupal\corporate\Taxonomy\TaxonomyTermTree
+    arguments: [ '@entity_type.manager' ]
+  corporate.taxonomy_vocabulary_form:
+    class: Drupal\corporate\Form\VocabularytFormAlter
+    arguments:
+      - 'taxonomy_vocabulary_form'
+    tags:
+      - name: form_alter
+        priority: 1
+
+

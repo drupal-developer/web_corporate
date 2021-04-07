@@ -1,0 +1,5 @@
+name: 'Email'
+type: module
+description: 'Administración de correos electrónicos'
+package: 'Corporativa'
+core_version_requirement: ^9

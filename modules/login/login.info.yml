@@ -1,0 +1,5 @@
+name: 'login'
+type: module
+description: 'Custom login'
+package: 'Corporativa'
+core_version_requirement: ^9

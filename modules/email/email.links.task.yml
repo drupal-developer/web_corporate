@@ -1,0 +1,4 @@
+mail.settings_tab:
+  route_name: mail.settings
+  title: 'Configuración'
+  base_route: mail.settings

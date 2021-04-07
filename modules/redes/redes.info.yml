@@ -1,0 +1,5 @@
+name: 'Redes sociales'
+type: module
+description: 'Administración de las redes sociales'
+package: 'Corporativa'
+core_version_requirement: ^9

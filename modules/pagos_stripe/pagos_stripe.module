@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Implements hook_cron().
+ *
+ * @throws \Drupal\Core\Entity\EntityStorageException
+ */
+function pagos_stripe_cron() {
+  // Eliminar pagos incompletos
+
+  $time = strtotime('-1 hour');
+
+  $query = \Drupal::entityQuery('pago');
+  $query->condition('created', $time, '<');
+  $query->notExists('payment_intent');
+  $result = $query->execute();
+  foreach ($result as $id) {
+    $pago = \Drupal\pagos_stripe\Entity\Pago::load($id);
+    $pago->delete();
+  }
+}

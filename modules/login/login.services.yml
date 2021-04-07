@@ -1,0 +1,31 @@
+services:
+  login.user_login_form:
+    class: Drupal\login\Form\LoginFormAlter
+    arguments:
+      - 'user_login_form'
+    tags:
+      - name: form_alter
+        priority: 1
+  login.user_pass:
+    class: Drupal\login\Form\UserPassFormAlter
+    arguments:
+      - 'user_pass'
+    tags:
+      - name: form_alter
+        priority: 1
+  login.user_register_form:
+    class: Drupal\login\Form\UserRegisterFormAlter
+    arguments:
+      - 'user_register_form'
+    tags:
+      - name: form_alter
+        priority: 1
+  login.user_pass_reset:
+    class: Drupal\login\Form\UserPassResetFormAlter
+    arguments:
+      - 'user_pass_reset'
+    tags:
+      - name: form_alter
+        priority: 1
+
+

@@ -1,0 +1,64 @@
+header .layout-container img {
+  max-height: 100px !important;
+}
+
+h1.page-title {
+  color: #3f3f3f;
+}
+
+input:focus {
+  -webkit-box-shadow: 0 0 0 2px #FCE32A,0 0 0 4px #FCE32A !important;
+  box-shadow: 0 0 0 2px #FCE32A,0 0 0 4px #FCE32A !important;
+}
+
+a {
+  color: #3f3f3f !important;;
+}
+
+.path-user form .button, .path-user form .button:not(:focus),.path-user form .form-actions .button, .path-user form .action-link--icon-trash.action-link {
+  padding: calc(1rem - 2px) calc(1.5rem - 2px);
+  border: 2px solid #3f3f3f !important;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 1px 2px var(--colorGinPrimaryLight);
+  box-shadow: 0 1px 2px var(--colorGinPrimaryLight);
+  color: #3f3f3f !important;
+  background-color: white !important;
+}
+
+.path-user form .button:hover,.path-user form .form-actions .button:hover, .path-user form .action-link--icon-trash.action-link:hover {
+  background-color: #3f3f3f !important;
+  color: white !important;
+  border-color: #3f3f3f !important;
+}
+
+.path-user header .layout-container{
+  text-align: center;
+}
+
+@media (max-width: 799px) {
+
+  h1.page-title.user-form-page__page-title{
+    text-align: center;
+  }
+
+  .path-user .user-form-page{
+    position: relative !important;
+  }
+
+  .path-user .user-form-page__user-form {
+    background-color: rgb(255,255,255,.9);
+    position: relative !important;
+    z-index: 2;
+  }
+
+  .path-user .user-form-page__wallpaper {
+    display: block !important;
+    position: absolute !important;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+

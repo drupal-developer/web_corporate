@@ -1,0 +1,8 @@
+corporate.entidades:
+  title: 'Entidades'
+  route_name: corporate.entidades
+  parent: system.admin_structure
+corporate.blocks:
+  title: 'Bloques'
+  route_name: corporate.blocks
+  parent: system.admin_config

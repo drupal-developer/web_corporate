@@ -1,0 +1,22 @@
+{% if page.highlighted %}
+  {{ page.highlighted }}
+{% endif %}
+<div class="fullscreen"></div>
+<div class="contenido">
+  <div id="auth_box" class="formulario">
+    {{ page.header }}
+    <div id="middle_part" class="mt-4">
+      {{ page.content.system_main}}
+    </div>
+    <div id="bottom_part">
+      <div class="password_link">
+        <a href="{{ path('user.pass') }}">{{ 'Forgot your password?'|t }}</a>
+      </div>
+      {% if create_accounts %}
+        <div class="register_link">
+          <a href="{{ path('user.register') }}">{{ 'Register a new account'|t }}</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

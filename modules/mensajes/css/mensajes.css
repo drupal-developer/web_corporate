@@ -1,0 +1,27 @@
+.icon-mensajes {
+  font-size: 20px;
+  position: absolute;
+  left: 7px;
+  top: 0px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+div.noty_bar {
+  position: relative;
+}
+
+.noty_body {
+  padding-left: 40px !important;
+}
+
+.noty_body a,
+.noty_body a:hover {
+  color: white;
+  font-weight: bold;
+}
+
+.noty_progressbar {
+  opacity: 0.6 !important;
+}

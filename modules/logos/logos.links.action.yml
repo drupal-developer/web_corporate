@@ -1,0 +1,8 @@
+entity.logo.add_form:
+  route_name: entity.logo.add_form
+  title: 'Añadir logo'
+  options:
+    query:
+      destination: '/admin/config/logos'
+  appears_on:
+    - view.logos.page_admin

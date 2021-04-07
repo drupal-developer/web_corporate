@@ -1,0 +1,258 @@
+<?php
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Render\Element;
+
+/**
+ * Implements hook_theme().
+ */
+function corporate_theme($existing, $type, $theme, $path) {
+
+  return [
+    'block_content' => [
+      'render element' => 'elements',
+    ],
+  ];
+
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter() for block_content.
+ *
+ * @param array $build
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
+ */
+function corporate_block_content_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  $build['#theme'] = 'block_content';
+}
+
+/**
+ * Preprocess function for block content template.
+ *
+ * @param $variables
+ */
+function template_preprocess_block_content(&$variables) {
+
+  $variables['content'] = [];
+
+  if (isset($variables['elements']['_layout_builder'])) {
+    $variables['content'][] = $variables['elements']['_layout_builder'];
+  }
+  else {
+    $content = [];
+    foreach (Element::children($variables['elements']) as $key) {
+      $content[$key] = $variables['elements'][$key];
+    }
+    $variables['content'] = $content;
+  }
+
+  if (isset($variables['attributes']['data-quickedit-entity-id'])) {
+    unset($variables['attributes']['data-quickedit-entity-id']);
+  }
+
+  $variables['block_content'] = $variables['elements']['#block_content'];
+
+}
+
+/**
+ * Implements hook_theme_suggestions_HOOK().
+ *
+ * @param array $variables
+ *
+ * @return array
+ */
+function corporate_theme_suggestions_block_content(array $variables) {
+
+  $suggestions = [];
+
+  $block_content = $variables['elements']['#block_content'];
+
+  $suggestions[] = implode('__', ['block_content', $block_content->bundle(), $variables['elements']['#view_mode']]);
+  $suggestions[] = implode('__', ['block_content', $block_content->bundle()]);
+  $suggestions[] = implode('__', ['block_content', $block_content->id()]);
+
+  return $suggestions;
+
+}
+
+//Function para generar archivo log.
+function develog($txt, $file = 'devel.log'){
+  $myfile = fopen( 'sites/default/files/'. $file, "a+");// or die("Unable to open file!");
+  $line = date('Y-m-d H:i:s') . ' - ' . $txt;
+  fwrite($myfile,$line."\n");
+  fclose($myfile);
+}
+
+
+function corporate_preprocess_image_widget(&$variables) {
+  $element = $variables['element'];
+
+  $variables['attributes'] = array('class' => array('image-widget', 'js-form-managed-file', 'form-managed-file', 'clearfix'));
+
+  if (!empty($element['fids']['#value'])) {
+    $file = reset($element['#files']);
+    $element['file_' . $file->id()]['filename']['#suffix'] = ' <span class="file-size">(' . format_size($file->getSize()) . ')</span> ';
+    $file_variables = array(
+      'style_name' => $element['#preview_image_style'],
+      'uri' => $file->getFileUri(),
+    );
+
+    // Determine image dimensions.
+    if (isset($element['#value']['width']) && isset($element['#value']['height'])) {
+      $file_variables['width'] = $element['#value']['width'];
+      $file_variables['height'] = $element['#value']['height'];
+    } else {
+      $image = \Drupal::service('image.factory')->get($file->getFileUri());
+      if ($image->isValid()) {
+        $file_variables['width'] = $image->getWidth();
+        $file_variables['height'] = $image->getHeight();
+      }
+      else {
+        $file_variables['width'] = $file_variables['height'] = NULL;
+      }
+    }
+
+    $element['preview'] = array(
+      '#weight' => -10,
+      '#theme' => 'image_style',
+      '#width' => $file_variables['width'],
+      '#height' => $file_variables['height'],
+      '#style_name' => $file_variables['style_name'],
+      '#uri' => $file_variables['uri'],
+    );
+
+    // Store the dimensions in the form so the file doesn't have to be
+    // accessed again. This is important for remote files.
+    $element['width'] = array(
+      '#type' => 'hidden',
+      '#value' => $file_variables['width'],
+    );
+    $element['height'] = array(
+      '#type' => 'hidden',
+      '#value' => $file_variables['height'],
+    );
+  }
+
+  $variables['data'] = array();
+  foreach (\Drupal\Core\Render\Element::children($element) as $child) {
+    $variables['data'][$child] = $element[$child];
+  }
+
+}
+
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * @param array $attachments
+ */
+function corporate_page_attachments(array &$attachments) {
+  $theme = Drupal::theme()->getActiveTheme()->getName();
+  $account = Drupal::currentUser();
+  if ($theme == 'gin' && $account->id() != 1) {
+    $attachments['#attached']['library'][] = 'corporate/gin';
+  }
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function corporate_preprocess_maintenance_page(&$variables) {
+}
+
+
+/**
+ * Implements hook_ENTITY_TYPE_access().
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ * @param $operation
+ * @param \Drupal\Core\Session\AccountInterface $account
+ *
+ * @return \Drupal\Core\Access\AccessResultAllowed
+ */
+function corporate_block_content_access(\Drupal\Core\Entity\EntityInterface $entity, $operation, \Drupal\Core\Session\AccountInterface $account) {
+  $access = \Drupal\Core\Access\AccessResult::forbidden();
+  if ($operation == 'update') {
+    if ($account->hasPermission('edit block content')) {
+      $access = \Drupal\Core\Access\AccessResult::allowed();
+    }
+  }
+  elseif ($operation == 'view') {
+    $access = \Drupal\Core\Access\AccessResult::allowed();
+  }
+  if (Drupal::currentUser()->id() == 1) {
+    $access = \Drupal\Core\Access\AccessResult::allowed();
+  }
+  return $access;
+}
+
+
+/**
+ * Implements hook_preprocess_page_title().
+ */
+function corporate_preprocess_page_title(&$variables) {
+
+  $node = \Drupal::request()->attributes->get('node');
+
+  if ($node instanceof \Drupal\node\Entity\Node) {
+    $url_object = \Drupal::service('path.validator')->getUrlIfValid(Drupal::service('path.current')->getPath());
+    if ($url_object instanceof \Drupal\Core\Url) {
+      $route_name = $url_object->getRouteName();
+      if ($route_name == 'entity.node.edit_form') {
+        $variables['title'] =  'Editar ' . $node->getTitle();
+      }
+    }
+  }
+}
+
+
+
+/**
+ * Implements template_preprocess_html().
+ */
+function corporate_preprocess_html(&$variables) {
+
+  $route_name = \Drupal::routeMatch()->getRouteName();
+
+  if ($route_name == 'user.reset') {
+    $variables['attributes']['class'][] = 'path-user-reset';
+  }
+}
+
+/**
+ * Implements hook_ckeditor_css_alter().
+ *
+ * @param array $css
+ * @param \Drupal\editor\Entity\Editor $editor
+ */
+function corporate_ckeditor_css_alter(array &$css, \Drupal\editor\Entity\Editor $editor) {
+  if (!$editor->hasAssociatedFilterFormat()) {
+    return;
+  }
+
+  $known_formats = [
+    'html_basico',
+    'full_html'
+  ];
+
+  if (in_array($editor->getFilterFormat()->id(), $known_formats)) {
+    $css[] = drupal_get_path('theme', 'frontend') . '/css/ckeditor.css';
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function corporate_cron() {
+  $time = time() - 3600;
+  $query = Drupal::database()->select('sessions', 's');
+  $query->fields('s', ['sid', 'uid']);
+  $query->condition('timestamp', $time, '<');
+  $result = $query->execute();
+  while ($fil = $result->fetchAssoc()) {
+    Drupal::service('session_manager')->delete($fil['uid']);
+  }
+}

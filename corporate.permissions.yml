@@ -1,0 +1,12 @@
+access site configuration:
+  title: 'Acceder a la configuración'
+access structure:
+  title: 'Acceder a la estructura'
+access node revision:
+  title: 'Acceder a las revisiones'
+administer entities:
+  title: 'Administrar entidades'
+edit block content:
+  title: 'Editar contenido bloques'
+administer vocabularies:
+  title: 'Administrar vocabularios'

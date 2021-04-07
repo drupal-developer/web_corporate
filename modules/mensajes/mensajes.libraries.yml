@@ -1,0 +1,14 @@
+mensajes:
+  version: VERSION
+  css:
+    component:
+      css/noty.css: {}
+      css/mensajes.css: {}
+  js:
+    js/mensajes.js: {}
+    js/bounce.js: {}
+    js/noty.min.js: { minified: true}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    - core/drupalSettings

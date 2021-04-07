@@ -1,0 +1,8 @@
+entity.red_social.add_form:
+  route_name: entity.red_social.add_form
+  title: 'Añadir red social'
+  options:
+    query:
+      destination: '/admin/config/redes_sociales'
+  appears_on:
+    - view.redes_sociales.page_admin

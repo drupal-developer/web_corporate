@@ -1,0 +1,5 @@
+mensajes.settings_form:
+  title: 'Configuración mensajes'
+  description: 'Configurar opciones de los mensajes'
+  route_name: mensajes.settings_form
+  parent: system.admin_config_ui

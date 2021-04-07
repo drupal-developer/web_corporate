@@ -1,1 +1,2 @@
-# web_corporate
+# Web corporativa
+### Funcionalidad principal para web corporativa

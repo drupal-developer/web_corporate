@@ -1,0 +1,27 @@
+.user-form details#edit-gin-theme-settings,
+.path-user-reset .block-system-breadcrumb-block{
+  display: none;
+}
+
+.path-user-reset #block-gin-page-title h1.page-title{
+  margin:auto
+}
+.path-user-reset #user-form{
+  max-width: 420px !important;
+}
+.path-user-reset #user-form input{text-align:center !important; width:100%; }
+
+.path-user-reset #edit-actions{
+  justify-content: center;
+}
+.path-user-reset #edit-actions input{
+  margin:0;
+}
+.path-user-reset #block-gin-content{
+  max-width: 420px;
+  margin: auto;
+}
+
+
+
+

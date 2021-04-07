@@ -1,0 +1,43 @@
+<?php
+
+use JetBrains\PhpStorm\ArrayShape;
+
+/**
+ * Implements hook_preprocess_page_title().
+ */
+function redes_preprocess_page_title(&$variables) {
+
+  $red = \Drupal::request()->attributes->get('red_social');
+
+  if ($red instanceof \Drupal\redes\Entity\RedSocial) {
+    $url_object = \Drupal::service('path.validator')->getUrlIfValid(Drupal::service('path.current')->getPath());
+    $route_name = $url_object->getRouteName();
+    if ($route_name == 'entity.red_social.delete_form') {
+      $variables['title'] =  '¿Seguro que quieres eliminar la red social ' . $red->label() . '?';
+    }
+    elseif ($route_name == 'entity.red_social.edit_form') {
+      $variables['title'] =  'Editar red ' . $red->label();
+    }
+  }
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+#[ArrayShape([
+  'block_red_social_header' => "array",
+  'block_red_social_footer' => "array"
+])]
+function redes_theme($existing, $type, $theme, $path): array {
+  return [
+    'block_red_social_header' => [
+      'template' => 'block-red-social-header',
+      'variables' => ['redes' => NULL],
+    ],
+    'block_red_social_footer' => [
+      'template' => 'block-red-social-footer',
+      'variables' => ['redes' => NULL],
+    ],
+  ];
+}

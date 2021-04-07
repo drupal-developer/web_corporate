@@ -1,0 +1,4 @@
+entity.pago.settings_tab:
+  route_name: pago.settings
+  title: 'Configuración'
+  base_route: pago.settings

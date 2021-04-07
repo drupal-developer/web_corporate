@@ -1,0 +1,7 @@
+administer mail entities:
+  title: 'Administrar correos'
+  restrict access: true
+view mail entities:
+  title: 'Ver correos'
+edit mail entities:
+  title: 'Editar correos'

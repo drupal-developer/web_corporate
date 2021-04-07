@@ -1,0 +1,9 @@
+mensajes.settings_form:
+  path: /admin/config/user-interface/mensajes
+  defaults:
+    _form: 'Drupal\mensajes\Form\MensajesSettingsForm'
+    _title: 'Configurar mensajes'
+  requirements:
+    _permission: 'configure messages'
+  options:
+    _admin_route: TRUE

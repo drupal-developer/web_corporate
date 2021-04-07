@@ -1,0 +1,18 @@
+{
+  "name": "drupal-developer/web_corporate",
+  "description": "Funcionalidad principal para web corporativa",
+  "type": "drupal-module-core",
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=8.0",
+    "drupal/core": "^9"
+  },
+  "license": "GPL-2.0",
+  "authors": [
+    {
+      "name": "José Miguel Novillo Sánchez",
+      "email": "joseminosa@gmail.com",
+      "role": "Developer"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+corporate.entidades:
+  path: '/admin/structure/entidades'
+  defaults:
+    _controller: '\Drupal\corporate\Controller\CorporateController::entidadesPage'
+    _title: 'Entidades'
+  requirements:
+    _permission: 'administer entities'
+corporate.blocks:
+  path: '/admin/config/blocks'
+  defaults:
+    _controller: '\Drupal\corporate\Controller\CorporateController::bloques'
+    _title: 'Bloques'
+  requirements:
+    _permission: 'edit block content'
+corporate.front:
+  path: '/'
+  defaults:
+    _controller: '\Drupal\corporate\Controller\CorporateController::front'
+    _title: 'Front'
+  requirements:
+    _access: 'TRUE'
+

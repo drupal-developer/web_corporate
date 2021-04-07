@@ -1,0 +1,5 @@
+entity.pago.structure.settings:
+  title: 'Pagos'
+  description: 'Configurar pagos'
+  route_name: pago.settings
+  parent: corporate.entidades

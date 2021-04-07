@@ -1,0 +1,5 @@
+services:
+  mensajes.context:
+    class: Drupal\mensajes\ContextProvider\MessagesContext
+    tags:
+      - { name: 'context_provider' }

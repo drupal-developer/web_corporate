@@ -1,0 +1,5 @@
+administer pago entities:
+  title: 'Administrar pagos'
+  restrict access: true
+view pago entities:
+  title: 'Ver pagos'

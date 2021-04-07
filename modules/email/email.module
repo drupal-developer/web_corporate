@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * Implements hook_mail().
+ *
+ * @param $key
+ * @param $message
+ * @param $params
+ */
+function email_mail($key, &$message, $params) {
+  // The $params array holds the values entered on the ExampleForm, stored
+  // with the same structure as the $form array. We need to copy these values
+  // to the appropriate place in the $message so that they get used when
+  // sending the email.
+  $message['from'] = isset($params['headers']['From']) ? $params['headers']['From'] : NULL;
+  // Strip newline characters from e-mail subjects.
+  $message['subject'] = isset($params['subject']) ? str_replace(["\r\n", "\r", "\n"], ' ', $params['subject']) : NULL;
+  $message['body'][] = $params['body'];
+
+}
+
+
+/**
+ * Implements hook_mail_alter().
+ */
+function email_mail_alter(&$message) {
+  if (isset($message['headers']['Content-Type'])) {
+    $message['headers']['Content-Type'] = str_replace('text/plain', 'text/html', $message['headers']['Content-Type']);
+  }
+  $mail = NULL;
+  switch ($message['key']) {
+    case 'register_confirmation_with_pass':
+    case 'register_no_approval_required':
+      $mail = \Drupal\email\Entity\Mail::load(\Drupal\email\Entity\Mail::TYPE_REGISTER);
+      break;
+    case 'password_reset':
+      $mail = \Drupal\email\Entity\Mail::load(\Drupal\email\Entity\Mail::TYPE_RESET_PASSWORD);
+      break;
+  }
+
+  if ($mail instanceof \Drupal\email\Entity\Mail) {
+    $subject = $mail->getSubject();
+    $body = $mail->getBody();
+
+    $user = NULL;
+    $query = \Drupal::entityQuery('user');
+    $query->condition('mail', $message['to']);
+    $result = $query->execute();
+    if (!empty($result)) {
+      $user = \Drupal\user\Entity\User::load(reset($result));
+    }
+
+    if ($user instanceof \Drupal\user\Entity\User) {
+      $token_service = \Drupal::token();
+      $body = $token_service->replace($body, [
+        'user' => $user
+      ]);
+      $subject = $token_service->replace($subject, [
+        'user' => $user
+      ]);
+      $link_pass = user_pass_reset_url($user);
+      $body = str_replace('[user:one-time-login-url]', $link_pass, $body);
+
+      $message['subject'] = $subject;
+      $message['body'] = [$body];
+    }
+
+  }
+}
+
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function email_preprocess_mimemail_message(array &$variables) {
+  $variables['module'] = str_replace('_', '-', $variables['module']);
+  $variables['key'] = str_replace('_', '-', $variables['key']);
+  $variables['site_logo'] = null;
+  $logo = \Drupal\logos\Entity\Logo::load(\Drupal\logos\Entity\Logo::TYPE_MAIL);
+  if ($logo instanceof \Drupal\logos\Entity\Logo) {
+    $variables['site_logo'] = $logo->getUrl();
+  }
+
+}
+
+/**
+ * Implements hook_preprocess_page_title().
+ */
+function email_preprocess_page_title(&$variables) {
+
+  $mail = \Drupal::request()->attributes->get('mail');
+
+  if ($mail instanceof \Drupal\email\Entity\Mail) {
+    $url_object = \Drupal::service('path.validator')->getUrlIfValid(Drupal::service('path.current')->getPath());
+    $route_name = $url_object->getRouteName();
+    if ($route_name == 'entity.mail.delete_form') {
+      $types = \Drupal\email\Entity\Mail::getTypes();
+      $variables['title'] =  '¿Seguro que quieres eliminar el correo de ' . $types[$mail->get('type')->value] . '?';
+    }
+  }
+}

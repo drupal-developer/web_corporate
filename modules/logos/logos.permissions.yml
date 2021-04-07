@@ -1,0 +1,9 @@
+administer logo entities:
+  title: 'Administrar logos'
+  restrict access: true
+view logo entities:
+  title: 'Ver logos'
+edit logo entities:
+  title: 'Editar logos'
+access admin logos:
+  title: 'Acceder a la vista de logos'

@@ -1,0 +1,18 @@
+pagos_stripe.checkout_redirect:
+  path: '/checkout/{pago}'
+  defaults:
+    _form: '\Drupal\pagos_stripe\Form\CheckoutRedirectForm'
+    _title: 'Tramitar compra'
+  requirements:
+    _role: 'authenticated'
+  options:
+    parameters:
+      pago:
+        type: entity:pago
+pagos_stripe.notification:
+  path: /stripe/checkout/notification
+  defaults:
+    _controller: 'Drupal\pagos_stripe\Controller\PagosStripeController::checkoutNotification'
+    _title: 'Notificación compra'
+  requirements:
+    _access: 'TRUE'

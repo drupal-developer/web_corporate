@@ -1,0 +1,24 @@
+status:
+  icono: done
+  tema: metroui
+  tiempo: '3000'
+  sonido: 0
+  urlSonido: /modules/core/mensajes/sounds/default.wav
+warning:
+  icono: warning
+  tema: metroui
+  tiempo: '3000'
+  sonido: 0
+  urlSonido: /modules/core/mensajes/sounds/default.wav
+error:
+  icono: error
+  tema: metroui
+  tiempo: null
+  sonido: 0
+  urlSonido: /modules/core/mensajes/sounds/default_error.mp3
+info:
+  icono: info
+  tema: metroui
+  tiempo: '3000'
+  sonido: 0
+  urlSonido: /modules/core/mensajes/sounds/default.wav

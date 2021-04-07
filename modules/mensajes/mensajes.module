@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * Mensajes module file.
+ */
+
+use Drupal\Core\Render\Element\StatusMessages;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Plugin\ContextAwarePluginInterface;
+use Drupal\Component\Plugin\Exception\ContextException;
+use Drupal\Core\Cache\CacheableDependencyInterface;
+
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function mensajes_theme_registry_alter(&$theme_registry) {
+  $theme = Drupal::theme()->getActiveTheme()->getName();
+  $account = Drupal::currentUser();
+  if ($account->id() != 1 && $theme == 'frontend') {
+    unset($theme_registry['status_messages']['theme path']);
+    $theme_registry['status_messages']['path'] = drupal_get_path('module', 'mensajes') . '/templates';
+    $theme_registry['status_messages']['variables']['icon'] = FALSE;
+    $theme_registry['status_messages']['preprocess functions'][] = 'mensajes_preprocess';
+  }
+}
+
+
+function mensajes_preprocess(&$variables) {
+  $settings = \Drupal::config('mensajes.settings');
+  $types = Drupal\mensajes\Form\MensajesSettingsForm::messageTypeOptions();
+  $variables['icons'] = [];
+  foreach ($types as $type => $valor) {
+    $config = $settings->get($type);
+    if ($config['icono'] != '') {
+      $variables['icons'][$type] = $config['icono'];
+    }
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function mensajes_page_attachments(array &$attachments) {
+  $attachments['#attached']['drupalSettings']['mensajes'] = \Drupal::config('mensajes.settings')->get();
+  $attachments['#attached']['library'][] = 'mensajes/mensajes';
+}
+

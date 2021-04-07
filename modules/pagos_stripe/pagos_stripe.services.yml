@@ -1,0 +1,7 @@
+services:
+  logger.channel.pagos_stripe:
+    parent: logger.channel_base
+    arguments: ['pagos_stripe']
+  pagos_stripe.stripe_api:
+    class: Drupal\pagos_stripe\StripeApi
+    arguments: ['@stripe_api.stripe_api', '@logger.channel.pagos_stripe']

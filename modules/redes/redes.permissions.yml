@@ -1,0 +1,9 @@
+administer red_social entities:
+  title: 'Administrar redes sociales'
+  restrict access: true
+view red_social entities:
+  title: 'Ver redes sociales'
+edit red_social entities:
+  title: 'Editar sociales'
+access admin redes:
+  title: 'Acceder a la vista de sociales'

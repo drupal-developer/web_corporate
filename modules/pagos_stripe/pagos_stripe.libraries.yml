@@ -1,0 +1,5 @@
+checkout:
+  version: VERSION
+  js:
+    https://js.stripe.com/v3: { external: true }
+    js/checkout.js: {}

@@ -1,0 +1,8 @@
+entity.mail.add_form:
+  route_name: entity.mail.add_form
+  title: 'Añadir Correo'
+  options:
+    query:
+      destination: '/admin/config/mails'
+  appears_on:
+    - view.correos.page_admin
