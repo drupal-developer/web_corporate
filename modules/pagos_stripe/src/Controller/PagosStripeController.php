@@ -7,11 +7,13 @@ namespace Drupal\pagos_stripe\Controller;
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\pagos_stripe\Entity\Pago;
 use Drupal\pagos_stripe\StripeApi;
 use Drupal\user\Entity\User;
+use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Invoice;
 use Stripe\PaymentIntent;
@@ -94,6 +96,15 @@ class PagosStripeController extends ControllerBase {
               }
             }
           }
+        }
+
+        $site_config = $this->config('system.site');
+
+        try {
+          Customer::update($data['customer'], ['description' => $site_config->get('name')]);
+        }
+        catch (ApiErrorException $e) {
+          $this->stripeApi->logger->error($e->getMessage());
         }
 
         if (isset($data['metadata']['pago'])) {

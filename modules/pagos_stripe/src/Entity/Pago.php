@@ -24,7 +24,7 @@ use Drupal\user\Entity\User;
  *   label = "Pago",
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "views_data" = "Drupal\views\EntityViewsData",
+ *     "views_data" = "Drupal\pagos_stripe\Entity\PagoViewsData",
  *     "access" = "Drupal\pagos_stripe\Access\PagoAccessControlHandler",
  *     "route_provider" = {
  *       "html" = "Drupal\pagos_stripe\Routing\PagoHtmlRouteProvider"
@@ -67,6 +67,19 @@ class Pago extends ContentEntityBase {
       $id = $this->get('field_entidad')->target_id;
     }
     return $id;
+  }
+
+  /**
+   * Etiqueta de la entidad relacionada.
+   *
+   * @return string|null
+   */
+  public function entityLabel(): ?string {
+    $label = '';
+    if ($id = $this->getEntityId()) {
+      $label =  $this->get('field_entidad')->getEntity()->label();
+    }
+    return $label;
   }
 
   /**
