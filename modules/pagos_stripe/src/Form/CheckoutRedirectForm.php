@@ -37,23 +37,28 @@ class CheckoutRedirectForm extends FormBase {
     $form = [];
     $entity = $this->entity;
     if ($entity instanceof Pago) {
-      $session_id = \Drupal::service('pagos_stripe.stripe_api')->createSession($entity);
-      if ($session_id) {
-        $apiKey = \Drupal::service('pagos_stripe.stripe_api')->pubKey;
-        $form['api_key'] = [
-          '#type' => 'hidden',
-          '#attributes' => ['class' => ['apikey']],
-          '#default_value' => $apiKey,
-        ];
-        $form['session_id'] = [
-          '#type' => 'hidden',
-          '#attributes' => ['class' => ['sessionId']],
-          '#default_value' => $session_id,
-        ];
+      if (!$entity->get('payment_intent')->value) {
+        $session_id = \Drupal::service('pagos_stripe.stripe_api')->createSession($entity);
+        if ($session_id) {
+          $apiKey = \Drupal::service('pagos_stripe.stripe_api')->pubKey;
+          $form['api_key'] = [
+            '#type' => 'hidden',
+            '#attributes' => ['class' => ['apikey']],
+            '#default_value' => $apiKey,
+          ];
+          $form['session_id'] = [
+            '#type' => 'hidden',
+            '#attributes' => ['class' => ['sessionId']],
+            '#default_value' => $session_id,
+          ];
 
-        $form['mensaje']['#markup'] = 'Redirigiendo al TPV...';
+          $form['mensaje']['#markup'] = 'Redirigiendo al TPV...';
 
-        $form['#attached']['library'][] = 'pagos_stripe/checkout';
+          $form['#attached']['library'][] = 'pagos_stripe/checkout';
+        }
+      }
+      else {
+        $form['error']['#markup'] = 'El pago ya esta procesado.';
       }
     }
 
