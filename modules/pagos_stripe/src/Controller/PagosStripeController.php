@@ -83,11 +83,25 @@ class PagosStripeController extends ControllerBase {
 
     if ($access) {
       if ($data['object'] == 'checkout.session') {
+        $site_config = $this->config('system.site');
+        $customer_data = ['description' => $site_config->get('name')];
         if (isset($data['metadata']['user'])) {
           $usuario = User::load($data['metadata']['user']);
           if ($usuario instanceof User) {
             if ($usuario->hasField('stripe_customer_id')) {
               $usuario->set('stripe_customer_id', $data['customer']);
+              $nombre = '';
+              if ($usuario->get('field_nombre')->value) {
+                $nombre = $usuario->get('field_nombre')->value;
+                if ($usuario->get('field_apellidos')->value) {
+                  $nombre .= ' ' . $usuario->get('field_apellidos')->value;
+                }
+              }
+
+              if ($nombre != '') {
+                $customer_data['name'] = $nombre;
+              }
+
               try {
                 $usuario->save();
               }
@@ -98,14 +112,13 @@ class PagosStripeController extends ControllerBase {
           }
         }
 
-        $site_config = $this->config('system.site');
-
         try {
-          Customer::update($data['customer'], ['description' => $site_config->get('name')]);
+          Customer::update($data['customer'],$customer_data);
         }
         catch (ApiErrorException $e) {
           $this->stripeApi->logger->error($e->getMessage());
         }
+
 
         if (isset($data['metadata']['pago'])) {
           $pago = Pago::load($data['metadata']['pago']);
