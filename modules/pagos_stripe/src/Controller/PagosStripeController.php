@@ -17,6 +17,8 @@ use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Invoice;
 use Stripe\PaymentIntent;
+use Stripe\PaymentMethod;
+use Stripe\Subscription;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PagosStripeController extends ControllerBase {
@@ -54,10 +56,13 @@ class PagosStripeController extends ControllerBase {
     $planes = $config->get('planes');
     $access = FALSE;
     $precio = NULL;
-    if (isset($data['subscription'])) {
+    if (isset($data['subscription']) && $data['subscription']) {
       if ($subscription = $this->stripeApi->getSubscription($data['subscription'])) {
         $precio = $subscription['plan']['id'];
       }
+    }
+    elseif (isset($data['metadata']['price'])) {
+      $precio = $data['metadata']['price'];
     }
     elseif (isset($data['invoice'])) {
       $invoice = NULL;
@@ -76,6 +81,7 @@ class PagosStripeController extends ControllerBase {
       }
     }
 
+
     if ($precio && in_array($precio, $planes)) {
       $access = TRUE;
     }
@@ -83,55 +89,98 @@ class PagosStripeController extends ControllerBase {
 
     if ($access) {
       if ($data['object'] == 'checkout.session') {
-        $site_config = $this->config('system.site');
-        $customer_data = ['description' => $site_config->get('name')];
-        if (isset($data['metadata']['user'])) {
-          $usuario = User::load($data['metadata']['user']);
-          if ($usuario instanceof User) {
-            if ($usuario->hasField('stripe_customer_id')) {
-              $usuario->set('stripe_customer_id', $data['customer']);
-              $nombre = '';
-              if ($usuario->get('field_nombre')->value) {
-                $nombre = $usuario->get('field_nombre')->value;
-                if ($usuario->get('field_apellidos')->value) {
-                  $nombre .= ' ' . $usuario->get('field_apellidos')->value;
+        if (isset($data['customer']) && $data['customer']) {
+          $site_config = $this->config('system.site');
+          $customer_data = ['description' => $site_config->get('name')];
+          if (isset($data['metadata']['user'])) {
+            $usuario = User::load($data['metadata']['user']);
+            if ($usuario instanceof User) {
+              if ($usuario->hasField('stripe_customer_id')) {
+                $usuario->set('stripe_customer_id', $data['customer']);
+                $nombre = '';
+                if ($usuario->get('field_nombre')->value) {
+                  $nombre = $usuario->get('field_nombre')->value;
+                  if ($usuario->get('field_apellidos')->value) {
+                    $nombre .= ' ' . $usuario->get('field_apellidos')->value;
+                  }
+                }
+
+                if ($nombre != '') {
+                  $customer_data['name'] = $nombre;
+                }
+
+                try {
+                  $usuario->save();
+                }
+                catch (EntityStorageException $e) {
+                  $this->stripeApi->logger->error($e->getMessage());
+                }
+              }
+            }
+          }
+
+          try {
+            Customer::update($data['customer'],$customer_data);
+          }
+          catch (ApiErrorException $e) {
+            $this->stripeApi->logger->error($e->getMessage());
+          }
+          $subscription = NULL;
+          if (isset($data['metadata']['trial'])) {
+
+            $datos_suscripcion = [
+              'customer' => $data['customer'],
+              'items' => [['price' => $data['metadata']['price']]],
+              'trial_period_days' => (int) $data['metadata']['trial'],
+            ];
+
+            try {
+              $cards = PaymentMethod::all([
+                'customer' => $data['customer'],
+                'type' => 'card',
+              ]);
+
+              \Drupal::state()->set('aux', $cards);
+
+              if(!empty($cards->data)) {
+                $card = reset($cards->data);
+                if ($card instanceof PaymentMethod) {
+                  $datos_suscripcion['default_payment_method'] = $card->id;
                 }
               }
 
-              if ($nombre != '') {
-                $customer_data['name'] = $nombre;
+            }
+            catch (\Stripe\Exception\ApiErrorException $e) {
+              $this->stripeApi->logger->error($e->getMessage());
+            }
+
+            try {
+              $subscription = Subscription::create($datos_suscripcion);
+            }
+            catch (ApiErrorException $e) {
+              $this->stripeApi->logger->error($e->getMessage());
+            }
+          }
+
+
+          if (isset($data['metadata']['pago'])) {
+            $pago = Pago::load($data['metadata']['pago']);
+            if ($pago instanceof Pago) {
+              if (isset($data['subscription']) && $data['subscription']) {
+                $pago->set('subscription', $data['subscription']);
+                $pago->setSuscriptionEntity($data['subscription']);
               }
 
+              if ($subscription instanceof Subscription) {
+                $pago->set('subscription', $subscription->id);
+                $pago->setSuscriptionEntity($subscription->id);
+              }
               try {
-                $usuario->save();
+                $pago->save();
               }
               catch (EntityStorageException $e) {
                 $this->stripeApi->logger->error($e->getMessage());
               }
-            }
-          }
-        }
-
-        try {
-          Customer::update($data['customer'],$customer_data);
-        }
-        catch (ApiErrorException $e) {
-          $this->stripeApi->logger->error($e->getMessage());
-        }
-
-
-        if (isset($data['metadata']['pago'])) {
-          $pago = Pago::load($data['metadata']['pago']);
-          if ($pago instanceof Pago) {
-            if (isset($data['subscription'])) {
-              $pago->set('subscription', $data['subscription']);
-              $pago->setSuscriptionEntity($data['subscription']);
-            }
-            try {
-              $pago->save();
-            }
-            catch (EntityStorageException $e) {
-              $this->stripeApi->logger->error($e->getMessage());
             }
           }
         }
@@ -213,7 +262,6 @@ class PagosStripeController extends ControllerBase {
                   catch (ApiErrorException $e) {
                     $this->stripeApi->logger->error($e->getMessage());
                   }
-
                 }
               }
             }

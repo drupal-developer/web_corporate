@@ -4,12 +4,14 @@
 namespace Drupal\pagos_stripe;
 
 
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Url;
 use Drupal\pagos_stripe\Entity\Pago;
 use Drupal\stripe_api\StripeApiService;
 use Drupal\user\Entity\User;
 use Psr\Log\LoggerInterface;
 use Stripe\Checkout\Session;
+use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Plan;
 use Stripe\Price;
@@ -35,18 +37,25 @@ class StripeApi {
 
   public ?string $pubKey;
 
+  /**
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected ConfigFactory $config;
+
 
   /**
    * StripeApi constructor.
    *
    * @param \Drupal\stripe_api\StripeApiService $stripeApiService
    * @param \Psr\Log\LoggerInterface $logger
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
    */
-  public function __construct(StripeApiService $stripeApiService, LoggerInterface $logger) {
+  public function __construct(StripeApiService $stripeApiService, LoggerInterface $logger, ConfigFactory $configFactory) {
     $this->stripeApi = $stripeApiService;
     $this->logger = $logger;
     $this->apiKey = $stripeApiService->getApiKey();
     $this->pubKey = $stripeApiService->getPubKey();
+    $this->config = $configFactory;
   }
 
   /**
@@ -105,6 +114,9 @@ class StripeApi {
 
       if ($price instanceof Price) {
         $mode = $price->type == 'recurring' ? 'subscription' : 'payment';
+        if (isset($dataPago['mode'])) {
+          $mode = $dataPago['mode'];
+        }
         $product = NULL;
         try {
           $product = Product::retrieve($price->product);
@@ -126,6 +138,43 @@ class StripeApi {
           'mode' => $mode,
           'metadata' => ['pago' => $pago->id()]
         ];
+
+        if ($mode == 'setup') {
+          unset($datos_session['line_items']);
+
+          if ($usuario instanceof User) {
+
+            if (!$usuario->get('stripe_customer_id')->value) {
+              $nombre = '';
+              if ($usuario->get('field_nombre')->value) {
+                $nombre = $usuario->get('field_nombre')->value;
+                if ($usuario->get('field_apellidos')->value) {
+                  $nombre .= ' ' . $usuario->get('field_apellidos')->value;
+                }
+              }
+
+              $site_config = $this->config->get('system.site');
+
+              try {
+                $customer = Customer::create([
+                  'email' => $usuario->getEmail(),
+                  'description' => $site_config->get('name'),
+                  'name' => $nombre,
+                ]);
+                $usuario->set('stripe_customer_id', $customer->id);
+              }
+              catch (ApiErrorException $e) {
+                $this->logger->error($e->getMessage());
+              }
+            }
+          }
+
+        }
+
+        if (isset($dataPago['trial'])) {
+          $datos_session['metadata']['trial'] = $dataPago['trial'];
+          $datos_session['metadata']['price'] = $price->id;
+        }
 
         if ($usuario instanceof User) {
           if ($usuario->get('stripe_customer_id')->value) {
