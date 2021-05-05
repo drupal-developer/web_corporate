@@ -253,6 +253,6 @@ function corporate_cron() {
   $query->condition('timestamp', $time, '<');
   $result = $query->execute();
   while ($fil = $result->fetchAssoc()) {
-    Drupal::service('session_manager')->delete($fil['uid']);
+    Drupal::database()->delete('sessions')->condition('sid', $fil['sid'])->execute();
   }
 }
