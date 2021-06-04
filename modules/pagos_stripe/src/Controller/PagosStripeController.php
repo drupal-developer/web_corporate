@@ -9,6 +9,7 @@ use Drupal\Component\Plugin\Exception\PluginNotFoundException;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\pagos_stripe\Entity\Pago;
 use Drupal\pagos_stripe\StripeApi;
@@ -55,7 +56,30 @@ class PagosStripeController extends ControllerBase {
     $config = $this->config('pagos_stripe.settings');
     $planes = $config->get('planes');
     $access = FALSE;
+    $access_product = FALSE;
     $precio = NULL;
+    $productos = [];
+    if ($config->get('entidad_producto')) {
+      if ($config->get('entidad_producto') != '_none') {
+        try {
+          $productos_entity = \Drupal::entityTypeManager()->getStorage($config->get('entidad_producto'))->loadByProperties(['gratuito' => 0]);
+        }
+        catch (InvalidPluginDefinitionException | PluginNotFoundException $e) {
+          $this->getLogger('pagos_stripe')->error($e->getMessage());
+        }
+
+        if (!empty($productos_entity)) {
+          foreach ($productos_entity as $producto) {
+            if ($producto instanceof ContentEntityBase) {
+              if ($producto->hasField('remote_id')) {
+                $productos[] = $producto->get('remote_id')->value;
+              }
+            }
+          }
+        }
+
+      }
+    }
     if (isset($data['subscription']) && $data['subscription']) {
       if ($subscription = $this->stripeApi->getSubscription($data['subscription'])) {
         $precio = $subscription['plan']['id'];
@@ -81,13 +105,15 @@ class PagosStripeController extends ControllerBase {
       }
     }
 
-
-    if ($precio && in_array($precio, $planes)) {
+    if ($precio && in_array($precio, $planes, TRUE)) {
       $access = TRUE;
     }
 
+    if ($precio && in_array($precio, $productos, TRUE)) {
+      $access_product = TRUE;
+    }
 
-    if ($access) {
+    if ($access_product || $access) {
       if ($data['object'] == 'checkout.session') {
         if (isset($data['customer']) && $data['customer']) {
           $site_config = $this->config('system.site');
@@ -125,6 +151,15 @@ class PagosStripeController extends ControllerBase {
           catch (ApiErrorException $e) {
             $this->stripeApi->logger->error($e->getMessage());
           }
+        }
+      }
+    }
+
+
+    if ($access) {
+      if ($data['object'] == 'checkout.session') {
+        if (isset($data['customer']) && $data['customer']) {
+
           $subscription = NULL;
           if (isset($data['metadata']['trial'])) {
 
@@ -139,8 +174,6 @@ class PagosStripeController extends ControllerBase {
                 'customer' => $data['customer'],
                 'type' => 'card',
               ]);
-
-              \Drupal::state()->set('aux', $cards);
 
               if(!empty($cards->data)) {
                 $card = reset($cards->data);
@@ -265,6 +298,25 @@ class PagosStripeController extends ControllerBase {
                 }
               }
             }
+          }
+        }
+      }
+    }
+
+    if ($access_product) {
+      if (isset($data['metadata']['pago']) && isset($data['payment_intent']) && !is_null($data['payment_intent'])) {
+        $pago = Pago::load($data['metadata']['pago']);
+        if ($pago instanceof Pago) {
+          $total = round($data['amount_total'] / 100, 2);
+          $pago->set('payment_intent', $data['payment_intent']);
+          $pago->set('total', $total);
+          $pago->setRemoteIdEntity($data['payment_intent']);
+
+          try {
+            $pago->save();
+          }
+          catch (EntityStorageException $e) {
+            $this->stripeApi->logger->error($e->getMessage());
           }
         }
       }

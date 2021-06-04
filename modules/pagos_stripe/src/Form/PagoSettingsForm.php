@@ -5,6 +5,7 @@ namespace Drupal\pagos_stripe\Form;
 
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -26,14 +27,20 @@ class PagoSettingsForm extends ConfigFormBase {
   protected StripeApi $stripeApi;
 
   /**
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  private EntityTypeManager $entityTypeManager;
+
+  /**
    * Class constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    * @param \Drupal\pagos_stripe\StripeApi $stripeApi
    */
-  public function __construct(ConfigFactoryInterface $config_factory, StripeApi $stripeApi) {
+  public function __construct(ConfigFactoryInterface $config_factory, StripeApi $stripeApi, EntityTypeManager $entityTypeManager) {
     parent::__construct($config_factory);
     $this->stripeApi = $stripeApi;
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
@@ -42,7 +49,8 @@ class PagoSettingsForm extends ConfigFormBase {
   public static function create(ContainerInterface $container): PagoSettingsForm {
     return new static(
       $container->get('config.factory'),
-      $container->get('pagos_stripe.stripe_api')
+      $container->get('pagos_stripe.stripe_api'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -99,6 +107,20 @@ class PagoSettingsForm extends ConfigFormBase {
       ];
     }
 
+    $entity_definitions = $this->entityTypeManager->getDefinitions();
+    $entity_types_list = [];
+    $entity_types_list['_none'] = '-Seleccionar-';
+    foreach($entity_definitions as $entity_name => $entity_definition) {
+      $entity_types_list[$entity_name] = (string) $entity_definition->getLabel();
+    }
+
+    $form['entidad_producto'] = [
+      '#type' => 'select',
+      '#title' => 'Entidad para productos',
+      '#options' => $entity_types_list,
+      '#default_value' => $config->get('entidad_producto') ? $config->get('entidad_producto') : '_none',
+    ];
+
     $form['actions'] = [
       '#type' => 'actions',
       'submit' => [
@@ -121,6 +143,7 @@ class PagoSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $this->config('pagos_stripe.settings')->set('planes', $values['planes'])->save();
+    $this->config('pagos_stripe.settings')->set('entidad_producto', $values['entidad_producto'])->save();
     $this->messenger()->addStatus('Configuración guardada');
   }
 

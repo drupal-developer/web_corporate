@@ -132,6 +132,30 @@ class Pago extends ContentEntityBase {
     }
   }
 
+  /**
+   * Guardar id del pago.
+   *
+   * @param $remote_id
+   */
+  public function setRemoteIdEntity($remote_id) {
+    if ($this->hasField('field_entidad')) {
+      if ($this->get('field_entidad')->target_id) {
+        $entidad = $this->get('field_entidad')->entity;
+        if ($entidad instanceof ContentEntityBase) {
+          if ($entidad->hasField('remote_id')) {
+            $entidad->set('remote_id', $remote_id);
+            try {
+              $entidad->save();
+            }
+            catch (EntityStorageException $e) {
+              \Drupal::service('logger.channel.pagos_stripe')->error($e->getMessage());
+            }
+          }
+        }
+      }
+    }
+  }
+
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 

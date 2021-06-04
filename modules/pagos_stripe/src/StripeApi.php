@@ -168,13 +168,12 @@ class StripeApi {
               }
             }
           }
-
         }
 
         if (isset($dataPago['trial'])) {
           $datos_session['metadata']['trial'] = $dataPago['trial'];
-          $datos_session['metadata']['price'] = $price->id;
         }
+        $datos_session['metadata']['price'] = $price->id;
 
         if ($usuario instanceof User) {
           if ($usuario->get('stripe_customer_id')->value) {
@@ -277,6 +276,19 @@ class StripeApi {
         $this->logger->error($e->getMessage());
       }
     }
+  }
+
+  public function getPrecio() {
+    $planes = $this->getPlans();
+    $importe = 0;
+    foreach ($planes as $plan) {
+      if ($plan instanceof Plan) {
+        $importe = $plan->amount_decimal / 100;
+        break;
+      }
+    }
+
+    return $importe;
   }
 
 }
