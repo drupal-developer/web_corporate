@@ -122,7 +122,7 @@ class MensajesSettingsForm extends ConfigFormBase {
           'file_validate_extensions' => ['wav mp3'],
         ],
         '#upload_location' => 'public://mensajes',
-        '#default_value' => $config_mensaje['sonido'],
+        '#default_value' => [$config_mensaje['sonido']],
       ];
 
     }
@@ -141,7 +141,7 @@ class MensajesSettingsForm extends ConfigFormBase {
     $estados = [];
     foreach ($this->messageTypeOptions() as $key => $valor) {
       $config_mensaje = $config->get($key);
-      $urlSonido = '/' . drupal_get_path('module', 'mensajes') . '/sounds/default.wav';
+      $urlSonido = null;
       $fid_sonido = 0;
       if (isset($form_state->getValue([$key, 'sonido'])[0])) {
         $fid_sonido = $form_state->getValue([$key, 'sonido'])[0];
@@ -159,11 +159,6 @@ class MensajesSettingsForm extends ConfigFormBase {
           $file->setPermanent();
           $file->save();
           $urlSonido = file_create_url($file->getFileUri());
-        }
-      }
-      else {
-        if ($key == 'error') {
-          $urlSonido = '/' . drupal_get_path('module', 'mensajes') . '/sounds/default_error.mp3';
         }
       }
       $tiempo = $form_state->getValue([
