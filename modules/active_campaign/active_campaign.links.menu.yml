@@ -1,0 +1,4 @@
+active_campaign.config:
+  title: 'ActiveCampaign'
+  route_name: active_campaign.config
+  parent: system.admin_config

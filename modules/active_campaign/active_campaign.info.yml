@@ -1,0 +1,5 @@
+name: 'ActiveCampaign'
+type: module
+description: 'Integración API de ActiveCampaign. <a target="_blank" href="https://developers.activecampaign.com/reference">API Documentación</a>'
+package: 'Corporativa'
+core_version_requirement: ^9

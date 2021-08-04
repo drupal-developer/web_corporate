@@ -1,0 +1,8 @@
+active_campaign.config:
+  path: /admin/config/active_campaign
+  defaults:
+    _form: 'Drupal\active_campaign\Form\ActiveCampaignConfigForm'
+    _title: 'ActiveCampaign'
+  requirements:
+    _permission: 'access config activecampaign'
+

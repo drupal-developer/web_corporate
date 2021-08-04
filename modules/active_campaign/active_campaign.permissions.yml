@@ -1,0 +1,3 @@
+access config activecampaign:
+  title: 'Acceder a la configuración de ActiveCampaign'
+  restrict access: true

@@ -1,0 +1,9 @@
+services:
+  logger.channel.active_campaign:
+    parent: logger.channel_base
+    arguments: [ 'active_campaign']
+  active_campaign:
+    class: Drupal\active_campaign\Service\ActiveCampaignService
+    arguments: [ '@http_client', '@config.factory', '@logger.channel.active_campaign' ]
+
+
