@@ -123,7 +123,6 @@ class ActiveCampaignConfigForm extends ConfigFormBase {
       $config->set($key, $value);
     }
     $config->save();
-    $this->messenger()->addStatus('Guardar');
   }
 
   /**
