@@ -203,6 +203,50 @@ class StripeApi {
   }
 
   /**
+   * Generar sesión para pagos en TPV.
+   *
+   * @param string $ref
+   *   Referencia del pago.
+   * @param $amount
+   *   Importe en formato amount.
+   *
+   * @return string|null
+   */
+  public function createSessionTPV(string $ref, $amount): ?string {
+    $session_id = NULL;
+    $urlKo = Url::fromRoute('pagos_stripe.tpv_repuesta', ['respuesta' => 'ko'], ['absolute' => TRUE]);
+    $urlok = Url::fromRoute('pagos_stripe.tpv_repuesta', ['respuesta' => 'ok'], ['absolute' => TRUE]);
+
+
+    $datos_session = [
+      'success_url' => $urlok->toString(),
+      'cancel_url' => $urlKo->toString(),
+      'payment_method_types' => ['card'],
+      'line_items' => [
+        [
+          'amount' => $amount,
+          'currency' => 'EUR',
+          'description' => 'Ref. ' . $ref,
+          'name' => 'Ref. ' . $ref,
+          'quantity' => 1
+        ]
+      ],
+      'mode' => 'payment',
+      'metadata' => ['ref' => $ref]
+    ];
+
+    try {
+      $session = Session::create($datos_session);
+      $session_id = $session->id;
+    }
+    catch (ApiErrorException $e) {
+      $this->logger->error($e->getMessage());
+    }
+
+    return $session_id;
+  }
+
+  /**
    * Obtener suscripción.
    *
    * @param $subscription_id

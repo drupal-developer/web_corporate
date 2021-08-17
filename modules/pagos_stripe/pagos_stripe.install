@@ -37,3 +37,16 @@ function pagos_stripe_create_stripe_customer_id_field() {
     $field->save();
   }
 }
+
+
+/**
+ * Añadir campo email a los pagos.
+ */
+function pagos_stripe_update_9001(&$sandbox) {
+  if(!Drupal::database()->schema()->fieldExists('pagos', 'mail')) {
+    $definition = \Drupal\Core\Field\BaseFieldDefinition::create('email')
+      ->setLabel('Email');
+    $update_manager = \Drupal::entityDefinitionUpdateManager();
+    $update_manager->installFieldStorageDefinition('mail', 'pago', 'pagos_stripe', $definition);
+  }
+}

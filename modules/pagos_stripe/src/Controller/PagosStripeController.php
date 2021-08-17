@@ -322,9 +322,41 @@ class PagosStripeController extends ControllerBase {
       }
     }
 
+    if (!$access && !$access_product && isset($data['payment_intent'])) {
+      $concepto = 'Ref.: ' . $data['metadata']['ref'];
+      $total = $data['amount_total'] / 100;
+      $pago = Pago::create([
+        'concepto' => $concepto,
+        'mail' => $data['customer_details']['email'],
+        'total' => $total,
+        'payment_intent' => $data['payment_intent'],
+        'data' => $data,
+      ]);
+
+      $pago->save();
+
+      try {
+        PaymentIntent::update($data['payment_intent'], ['description' => $concepto]);
+      }
+      catch (ApiErrorException $e) {
+        $this->stripeApi->logger->error($e->getMessage());
+      }
+    }
+
 
 
     return ['#markup' => ''];
+  }
+
+  /**
+   * Repuesta TPV.
+   *
+   * @param $respuesta
+   *
+   * @return array
+   */
+  public function respuestaTpv($respuesta): array {
+    return ['#theme' => 'tpv_respuesta', '#respuesta' => $respuesta];
   }
 
 }

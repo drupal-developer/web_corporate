@@ -16,3 +16,17 @@ pagos_stripe.notification:
     _title: 'Notificación compra'
   requirements:
     _access: 'TRUE'
+pagos_stripe.tpv:
+  path: /tpv/{ref}/{amount}
+  defaults:
+    _form: 'Drupal\pagos_stripe\Form\TpvForm'
+    _title: 'TPV'
+  requirements:
+    _access: 'TRUE'
+pagos_stripe.tpv_repuesta:
+  path: /tpv/respuesta/{respuesta}
+  defaults:
+    _controller: 'Drupal\pagos_stripe\Controller\PagosStripeController::respuestaTpv'
+    _title: 'TPV'
+  requirements:
+    _access: 'TRUE'

@@ -19,3 +19,16 @@ function pagos_stripe_cron() {
     $pago->delete();
   }
 }
+
+/**
+ * Implements hook_theme().
+ */
+function pagos_stripe_theme($existing, $type, $theme, $path) {
+  return [
+    'tpv_respuesta' => [
+      'template' => 'tpv-respuesta',
+      'variables' => ['respuesta' => NULL],
+    ],
+  ];
+}
+

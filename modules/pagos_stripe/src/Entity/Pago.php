@@ -164,6 +164,9 @@ class Pago extends ContentEntityBase {
       ->setSetting('target_type', 'user')
       ->setSetting('handler', 'default');
 
+    $fields['mail'] = BaseFieldDefinition::create('email')
+      ->setLabel('Email');
+
     $fields['concepto'] = BaseFieldDefinition::create('string')
       ->setLabel('Concepto');
 
