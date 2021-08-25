@@ -35,6 +35,10 @@ a {
   text-align: center;
 }
 
+.page-wrapper *:focus, .ui-dialog *:focus {
+  box-shadow: none !important;
+}
+
 @media (max-width: 799px) {
 
   h1.page-title.user-form-page__page-title{
