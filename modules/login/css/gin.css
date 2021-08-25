@@ -7,8 +7,8 @@ h1.page-title {
 }
 
 input:focus {
-  -webkit-box-shadow: 0 0 0 2px #FCE32A,0 0 0 4px #FCE32A !important;
-  box-shadow: 0 0 0 2px #FCE32A,0 0 0 4px #FCE32A !important;
+  -webkit-box-shadow: 0 0 0 2px black,0 0 0 4px black !important;
+  box-shadow: 0 0 0 2px black,0 0 0 4px black !important;
 }
 
 a {
