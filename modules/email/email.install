@@ -1,0 +1,86 @@
+<?php
+
+
+/**
+ * Crear campo key.
+ */
+function email_update_9001(&$sandbox) {
+  $mails = NULL;
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  if(Drupal::database()->schema()->fieldExists('mail_field_data', 'type')) {
+    $query = Drupal::database()->select('mail_field_data', 'm')->fields('m', ['id', 'type']);
+    $result = $query->execute();
+    while ($fil = $result->fetchAssoc()) {
+      $mails[$fil['id']] = $fil['type'];
+    }
+    $field_storage_definition = $update_manager->getFieldStorageDefinition('type', 'mail');
+    $update_manager->uninstallFieldStorageDefinition($field_storage_definition);
+  }
+
+  if(!Drupal::database()->schema()->fieldExists('mail_field_data', 'key')) {
+    $definition = \Drupal\Core\Field\BaseFieldDefinition::create('string')
+      ->setLabel('Key')
+      ->setDescription('')
+      ->setSettings([
+        'max_length' => 255,
+        'text_processing' => 0,
+      ])
+      ->setDefaultValue('')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
+    $update_manager = \Drupal::entityDefinitionUpdateManager();
+    $update_manager->installFieldStorageDefinition('key', 'mail', 'email', $definition);
+  }
+
+  if ($mails) {
+    foreach ($mails as $id => $type) {
+      $mail = Drupal::entityTypeManager()->getStorage('mail')->load($id);
+      $mail->set('key', $type);
+      $mail->save();
+    }
+  }
+
+}
+
+/**
+ * Crear campo name.
+ */
+function email_update_9002(&$sandbox) {
+
+  if(!Drupal::database()->schema()->fieldExists('mail_field_data', 'name')) {
+    $definition = \Drupal\Core\Field\BaseFieldDefinition::create('string')
+      ->setLabel('Titulo administrativo')
+      ->setDescription('')
+      ->setSettings([
+        'max_length' => 255,
+        'text_processing' => 0,
+      ])
+      ->setDefaultValue('')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
+        'weight' => 1,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
+    $update_manager = \Drupal::entityDefinitionUpdateManager();
+    $update_manager->installFieldStorageDefinition('name', 'mail', 'email', $definition);
+  }
+}
+
+

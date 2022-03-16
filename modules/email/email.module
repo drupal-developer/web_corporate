@@ -93,9 +93,8 @@ function email_preprocess_page_title(&$variables) {
   if ($mail instanceof \Drupal\email\Entity\Mail) {
     $url_object = \Drupal::service('path.validator')->getUrlIfValid(Drupal::service('path.current')->getPath());
     $route_name = $url_object->getRouteName();
-    if ($route_name == 'entity.mail.delete_form') {
-      $types = \Drupal\email\Entity\Mail::getTypes();
-      $variables['title'] =  '¿Seguro que quieres eliminar el correo de ' . $types[$mail->get('type')->value] . '?';
+    if ($route_name === 'entity.mail.delete_form') {
+      $variables['title'] =  '¿Seguro que quieres eliminar el correo de ' . $mail->get('name')->value . '?';
     }
   }
 }

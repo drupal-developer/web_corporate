@@ -22,10 +22,10 @@ class MailForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
 
     if (!$entity->isNew()) {
-      $form['type']['#access'] = FALSE;
+      $form['key']['#access'] = FALSE;
     }
 
-    $form['body']['tokens'] = $this->getTokens($entity->get('type')->value);
+    $form['body']['tokens'] = $this->getTokens($entity->get('key')->value);
 
     $form['actions']['submit']['#value'] = 'Guardar';
 
@@ -41,15 +41,12 @@ class MailForm extends ContentEntityForm {
     $entity = $this->entity;
     if ($entity->isNew()) {
       $values = $form_state->getValues();
-      $tipo = $values['type'][0]['value'];
-      $database = \Drupal::database();
-      $sql = "SELECT id FROM mail_field_data where type = '" . $tipo . "'";
-      $result = $database->query($sql);
-      if ($result) {
-        while ($row = $result->fetchAssoc()) {
-          $form_state->setErrorByName('type', 'Ya existe un correo para el tipo ' . $tipo);
-          break;
-        }
+      $key = $values['key'][0]['value'];
+
+      $query = \Drupal::database()->select('mail_field_data', 'm')->fields('m', ['id'])->condition('key', $key);
+      $result = $query->execute();
+      if ($fil = $result->fetchAssoc()) {
+        $form_state->setErrorByName('key', 'Ya existe un correo con el key ' . $key);
       }
     }
 

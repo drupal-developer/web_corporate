@@ -1,0 +1,7 @@
+services:
+  logger.channel.email:
+    parent: logger.channel_base
+    arguments: ['email']
+  email.mail:
+    class: Drupal\email\MailService
+    arguments: ['@language_manager', '@plugin.manager.mail','@logger.channel.email','@token', '@entity_type.manager', '@config.factory']

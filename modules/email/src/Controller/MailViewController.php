@@ -19,8 +19,7 @@ class MailViewController extends EntityViewController {
   public function title(Mail $mail = NULL): string {
     $title = 'Añadir correo';
     if ($mail) {
-      $types = Mail::getTypes();
-      $title = 'Editar correo de ' . $types[$mail->get('type')->value] ;
+      $title = 'Editar correo de ' . $mail->get('name')->value ;
     }
     return $title;
   }

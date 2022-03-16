@@ -47,35 +47,13 @@ use Drupal\Core\Field\BaseFieldDefinition;
  */
 class Mail extends ContentEntityBase {
 
-  const TYPE_REGISTER = 'register';
-  const TYPE_RESET_PASSWORD = 'reset_password';
-  const TYPE_CONFIRM_ORDER = 'order_completed';
-  const TYPE_CONFIRM_ORDER_STORE = 'order_completed_store';
-  const TYPE_SENT_ORDER = 'order_sent';
-  const TYPE_STOCK_ALERT = 'stock_alert';
-  const TYPE_STOCK_ALERT_COMPLETE = 'stock_alert_complete';
-
-  public static function getTypes() {
-    $types = [
-      self::TYPE_REGISTER => 'Registro',
-      self::TYPE_RESET_PASSWORD => 'Recuperar contraseña',
-    ];
-
-    $moduleHandler = \Drupal::service('module_handler');
-    if ($moduleHandler->moduleExists('commerce')) {
-      $types[self::TYPE_CONFIRM_ORDER] = 'Confirmar pedido cliente';
-      $types[self::TYPE_CONFIRM_ORDER_STORE] = 'Confirmar pedido tienda';
-      $types[self::TYPE_SENT_ORDER] = 'Pedido enviado';
-    }
-
-    if ($moduleHandler->moduleExists('stock')) {
-      $types[self::TYPE_STOCK_ALERT] = 'Aviso de stock';
-      $types[self::TYPE_STOCK_ALERT_COMPLETE] = 'Aviso de stock 15 dias';
-    }
-
-
-    return $types;
-  }
+  public const TYPE_REGISTER = 'register';
+  public const TYPE_RESET_PASSWORD = 'reset_password';
+  public const TYPE_CONFIRM_ORDER = 'order_completed';
+  public const TYPE_CONFIRM_ORDER_STORE = 'order_completed_store';
+  public const TYPE_SENT_ORDER = 'order_sent';
+  public const TYPE_STOCK_ALERT = 'stock_alert';
+  public const TYPE_STOCK_ALERT_COMPLETE = 'stock_alert_complete';
 
   /**
    * @inheritDoc
@@ -83,13 +61,10 @@ class Mail extends ContentEntityBase {
   public static function load($id): \Drupal\Core\Entity\EntityInterface|\Drupal\Core\Entity\EntityBase|null {
 
     if (!is_numeric($id)) {
-      $database = \Drupal::database();
-      $sql = "SELECT id FROM mail_field_data where type = '" . $id . "'";
-      $result = $database->query($sql);
-      if ($result) {
-        while ($row = $result->fetchAssoc()) {
-          $id = $row['id'];
-        }
+      $query = \Drupal::database()->select('mail_field_data', 'm')->fields('m', ['id'])->condition('key', $id);
+      $result = $query->execute();
+      while ($fil = $result->fetchAssoc()) {
+        $id = $fil['id'];
       }
     }
     return parent::load($id);
@@ -117,25 +92,48 @@ class Mail extends ContentEntityBase {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type): array {
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['type'] = BaseFieldDefinition::create('list_string')
-      ->setLabel(t('Type'))
+    $fields['key'] = BaseFieldDefinition::create('string')
+      ->setLabel('Key')
+      ->setDescription('')
       ->setSettings([
-        'max_length' => 60,
+        'max_length' => 255,
         'text_processing' => 0,
-        'allowed_values' => self::getTypes(),
       ])
+      ->setDefaultValue('')
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'string',
-        'weight' => 3,
+        'weight' => 0,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'options_select',
+        'type' => 'string_textfield',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
+
+
+    $fields['name'] = BaseFieldDefinition::create('string')
+      ->setLabel('Titulo administrativo')
+      ->setDescription('')
+      ->setSettings([
+        'max_length' => 255,
+        'text_processing' => 0,
+      ])
+      ->setDefaultValue('')
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'string',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'string_textfield',
         'weight' => 1,
       ])
-      ->setRequired(TRUE)
       ->setDisplayConfigurable('form', TRUE)
-      ->setDisplayConfigurable('view', TRUE);
+      ->setDisplayConfigurable('view', TRUE)
+      ->setRequired(TRUE);
 
     $fields['subject'] = BaseFieldDefinition::create('string')
       ->setLabel('Asunto')
