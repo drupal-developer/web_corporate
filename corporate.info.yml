@@ -4,5 +4,6 @@ description: 'Funcionalidad para web corporativa'
 package: 'Corporativa'
 core_version_requirement: ^9
 version: '1.1.1'
+datestamp: 1647432986
 dependencies:
   - form_alter_service:form_alter_service
