@@ -124,6 +124,8 @@ class MailForm extends ContentEntityForm {
     $items[] = '[site:name] => Nombre del sitio';
     $items[] = '[site:login-url] => Url de acceso';
 
+    \Drupal::moduleHandler()->invokeAll('email_form_tokens_alter', [&$items, $tipo]);
+
     $tokens['#items'] = $items;
 
     return $tokens;
